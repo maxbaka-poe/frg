@@ -5,42 +5,43 @@ import datetime
 import re
 
 # ＝＝＝＝＝＝ 設定 ＝＝＝＝＝＝
-# ① RSSを取得したいFANBOXのクリエイターID
 CREATOR_ID = "ilu" 
-
-# ② クリエイター名（RSSリーダーに表示される名前）
 CREATOR_NAME = "イル"
-
-# ③ 生成するXMLファイルの名前（バレないようにランダムな文字列にするのがおすすめ）
 OUTPUT_FILENAME = "secret_feed_12345.xml"
 # ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 
 def get_fanbox_posts(creator_id):
     api_url = f"https://api.fanbox.cc/post.listCreator?creatorId={creator_id}&limit=15"
+    
+    # 🌟 ここを「本物の日本のブラウザ」に限りなく近づけました
     headers = {
-        'Origin': 'https://www.fanbox.cc',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'Origin': f'https://{creator_id}.fanbox.cc',
+        'Referer': f'https://{creator_id}.fanbox.cc/',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
     }
+    
     try:
         res = requests.get(api_url, headers=headers)
+        
+        # 調査用：FANBOXからの返答をそのまま表示する
+        print(f"HTTPステータスコード: {res.status_code}")
+        print("=== FANBOXからの応答データ ===")
+        print(res.text[:1000]) # ログが長すぎないように先頭1000文字
+        print("==============================")
+        
         res.raise_for_status()
         data = res.json()
         
-        # 調査のための出力（ここにデータの中身が表示されます）
-        print("=== FANBOXからの応答データ ===")
-        print(data)
-        print("==============================")
-        
-        # もしbodyやitemsが存在しなければ空リストを返す
-        if not data or 'body' not in data or not data['body'] or 'items' not in data['body']:
+        if 'body' not in data or not data['body'] or 'items' not in data['body']:
+            print("※データ内に投稿情報が見つかりませんでした。")
             return []
             
         return data['body']['items']
         
     except Exception as e:
-        print(f"取得エラー: {e}")
-        if 'res' in locals():
-            print(f"エラー詳細: {res.text}")
+        print(f"通信処理でエラーが発生しました: {e}")
         return []
 
 def main():
@@ -50,7 +51,7 @@ def main():
 
     posts = get_fanbox_posts(CREATOR_ID)
     if not posts:
-        print("投稿が見つかりませんでした")
+        print("投稿が見つかりませんでした。")
         sys.exit(1)
 
     fg = FeedGenerator()
@@ -78,13 +79,12 @@ def main():
             fe.published(dt)
             fe.updated(dt)
 
-        # 本文の抜粋（ログインなしのため、有料投稿のbodyはNoneになります）
+        # 本文の処理
         body = post.get('body')
         fee = post.get('feeRequired', 0)
         content = ""
 
         if body:
-            # 無料公開されている場合の処理
             if 'text' in body and body['text']:
                 clean_text = re.sub(r'<.*?>', '', body['text'])
                 content = clean_text[:150] + '...'
@@ -93,7 +93,6 @@ def main():
             elif 'files' in body and body['files']:
                 content = "ファイルが公開されています"
         else:
-            # 本文がない ＝ 有料限定投稿の場合の処理
             if fee > 0:
                 content = f"【{fee}円プラン以上の限定投稿です。本文はFANBOXで確認してください】"
             else:
