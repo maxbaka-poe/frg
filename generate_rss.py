@@ -24,9 +24,23 @@ def get_fanbox_posts(creator_id):
     try:
         res = requests.get(api_url, headers=headers)
         res.raise_for_status()
-        return res.json().get('body', {}).get('items', [])
+        data = res.json()
+        
+        # 調査のための出力（ここにデータの中身が表示されます）
+        print("=== FANBOXからの応答データ ===")
+        print(data)
+        print("==============================")
+        
+        # もしbodyやitemsが存在しなければ空リストを返す
+        if not data or 'body' not in data or not data['body'] or 'items' not in data['body']:
+            return []
+            
+        return data['body']['items']
+        
     except Exception as e:
         print(f"取得エラー: {e}")
+        if 'res' in locals():
+            print(f"エラー詳細: {res.text}")
         return []
 
 def main():
