@@ -9,7 +9,7 @@ import re
 CREATOR_ID = "ilu" 
 
 # ② クリエイター名（RSSリーダーに表示される名前）
-CREATOR_NAME = "ilu"
+CREATOR_NAME = "イル"
 
 # ③ 生成するXMLファイルの名前（バレないようにランダムな文字列にするのがおすすめ）
 OUTPUT_FILENAME = "secret_feed_12345.xml"
