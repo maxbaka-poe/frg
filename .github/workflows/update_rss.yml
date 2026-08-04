@@ -1,0 +1,34 @@
+name: Generate FANBOX RSS
+
+on:
+  schedule:
+    - cron: '0 */12 * * *' # 6時間ごとに自動実行（1日4回）
+  workflow_dispatch:      # 手動で実行できるボタンを有効化
+
+permissions:
+  contents: write # リポジトリにファイルを書き込む権限
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install requests feedgen
+
+      - name: Run Python script
+        run: python generate_rss.py
+
+      - name: Commit and Push XML file
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add *.xml
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update RSS feed" && git push)
