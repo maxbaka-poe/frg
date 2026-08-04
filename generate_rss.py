@@ -13,7 +13,6 @@ OUTPUT_FILENAME = "secret_feed_12345.xml"
 def get_fanbox_posts(creator_id):
     api_url = f"https://api.fanbox.cc/post.listCreator?creatorId={creator_id}&limit=15"
     
-    # 🌟 ここを「本物の日本のブラウザ」に限りなく近づけました
     headers = {
         'Origin': f'https://{creator_id}.fanbox.cc',
         'Referer': f'https://{creator_id}.fanbox.cc/',
@@ -24,21 +23,17 @@ def get_fanbox_posts(creator_id):
     
     try:
         res = requests.get(api_url, headers=headers)
-        
-        # 調査用：FANBOXからの返答をそのまま表示する
-        print(f"HTTPステータスコード: {res.status_code}")
-        print("=== FANBOXからの応答データ ===")
-        print(res.text[:1000]) # ログが長すぎないように先頭1000文字
-        print("==============================")
-        
         res.raise_for_status()
         data = res.json()
         
-        if 'body' not in data or not data['body'] or 'items' not in data['body']:
-            print("※データ内に投稿情報が見つかりませんでした。")
+        # bodyの中から 'items' または 'posts' のどちらか存在する方を取得する
+        body_data = data.get('body', {})
+        posts_list = body_data.get('items') or body_data.get('posts')
+        
+        if not posts_list:
             return []
             
-        return data['body']['items']
+        return posts_list
         
     except Exception as e:
         print(f"通信処理でエラーが発生しました: {e}")
