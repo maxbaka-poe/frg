@@ -17,7 +17,10 @@ OUTPUT_FILENAME = "secret_feed_12345.xml"
 
 def get_fanbox_posts(creator_id):
     api_url = f"https://api.fanbox.cc/post.listCreator?creatorId={creator_id}&limit=15"
-    headers = {'Origin': 'https://www.fanbox.cc'}
+    headers = {
+        'Origin': 'https://www.fanbox.cc',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    }
     try:
         res = requests.get(api_url, headers=headers)
         res.raise_for_status()
