@@ -6,7 +6,7 @@ import re
 
 # ＝＝＝＝＝＝ 設定 ＝＝＝＝＝＝
 # ① RSSを取得したいFANBOXのクリエイターID
-CREATOR_ID = "12372838" 
+CREATOR_ID = "ilu" 
 
 # ② クリエイター名（RSSリーダーに表示される名前）
 CREATOR_NAME = "ilu"
